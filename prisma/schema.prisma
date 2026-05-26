@@ -1,0 +1,51 @@
+// This is your Prisma schema file.
+// Using SQLite for local preview environment compatibility.
+// For production with PostgreSQL, change provider to "postgresql".
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Mailbox {
+  id        String    @id @default(uuid())
+  address   String    @unique
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  messages  Message[]
+
+  @@index([address])
+  @@index([expiresAt])
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  mailboxId String
+  mailbox   Mailbox  @relation(fields: [mailboxId], references: [id], onDelete: Cascade)
+  
+  fromText  String   
+  fromEmail String   
+  subject   String
+  textBody  String?
+  htmlBody  String?
+
+  messageId String?
+  
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([mailboxId])
+}
+
+model ServerSettings {
+  id            String   @id @default(uuid())
+  mainDomain    String   @default("tempmail.local")
+  allowedDomains String   @default("tempmail.local,anonmail.local")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
